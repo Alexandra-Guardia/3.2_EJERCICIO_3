@@ -1,0 +1,74 @@
+#            Autor:
+# María Alexandra Guardia Canche
+# Versión 1.0 : 26/02/2025
+
+import numpy as np  # Importa la librería NumPy para manejar arreglos y operaciones matemáticas
+import matplotlib.pyplot as plt  # Importa Matplotlib para posibles visualizaciones
+
+def gauss_jordan_pivot_determinante(A, b):
+    """
+    Resuelve un sistema de ecuaciones Ax = b mediante el método de Gauss-Jordan con pivoteo parcial
+    e imprime el determinante de A para verificar si el sistema tiene solución única.
+    """
+    n = len(A)  # Obtiene el tamaño de la matriz A (número de ecuaciones)
+    
+    # Matriz aumentada: concatena A con el vector b en una sola matriz
+    Ab = np.hstack([A, b.reshape(-1, 1)]).astype(float)
+
+    # Cálculo del determinante de A para verificar si el sistema tiene solución única
+    det_A = np.linalg.det(A)
+
+    # Verificar si el sistema es determinado o indeterminado
+    if np.isclose(det_A, 0):  # Si el determinante es aproximadamente cero, el sistema no tiene solución única
+        print(f"Determinante de A: {det_A:.5f}. El sistema es indeterminado o no tiene solución única.")
+        return None  # Retorna None indicando que no se puede resolver
+
+    print(f"Determinante de A: {det_A:.5f}. El sistema tiene solución única.")
+
+    # Aplicación del método de Gauss-Jordan con pivoteo
+    for i in range(n):
+        # Pivoteo parcial: Encuentra la fila con el valor absoluto máximo en la columna actual
+        max_row = np.argmax(abs(Ab[i:, i])) + i  # Encuentra la fila con el mayor valor absoluto en la columna i
+        if i != max_row:  # Intercambia la fila actual con la fila encontrada si no es la misma
+            Ab[[i, max_row]] = Ab[[max_row, i]]
+
+        # Normalización de la fila pivote (hace que el pivote sea 1 dividiendo toda la fila por el pivote)
+        Ab[i] = Ab[i] / Ab[i, i]
+
+        # Eliminación en otras filas para convertir la columna i en ceros
+        for j in range(n):
+            if i != j:  # Evita operar sobre la fila pivote
+                Ab[j] -= Ab[j, i] * Ab[i]
+
+    # Extraer la solución (última columna de la matriz aumentada ya reducida)
+    x = Ab[:, -1]
+    return x  # Devuelve el vector de soluciones
+
+# Definir el sistema de ecuaciones (matriz de coeficientes A)
+A = np.array([
+    [2, -3, 4, -1, 5, -1, 2, -8, 3, -2],
+    [-3, 2, 5, -4, 4, -2, -3, 5, -2, -10],
+    [4, -1, 2, 3, 3, -6, -2, 5, -4, 8],
+    [-1, 5, -2, -3, 4, -6, 2, -3, 5, -6],
+    [3, -2, 5, -1, 4, 2, 3, 1, -5, 7],
+    [-2, 1, 4, -3, 4, 5, 2, -4, 3, -3],
+    [5, -1, 2, -3, 3, 4, -2, 3, -1, 9],
+    [1, -3, 4, -2, 5, -6, 2, 3, 4, -5],
+    [2, 3, -1, 4, -2, 5, -3, 1, 2, 6],
+    [-3, 2, 4, -1, -3, -2, 5, -1, 3, -8]
+], dtype=float)
+
+# Definir el vector de términos independientes b
+b = np.array([11, -10, 8, -6, 7, -3, 9, -5, 6, -8], dtype=float)
+
+# Resolver el sistema de ecuaciones usando Gauss-Jordan
+solucion = gauss_jordan_pivot_determinante(A, b)
+
+# Imprimir la solución si existe
+if solucion is not None:
+    print("Solución del sistema:")
+    resultado_np = np.column_stack((np.arange(1, len(solucion) + 1), solucion))  # Organiza las variables con sus valores
+    print("Variable | Valor")
+    print("----------------")
+    for fila in resultado_np:  # Itera sobre cada variable y su valor correspondiente
+        print(f"x{int(fila[0])}       | {fila[1]:.5f}")
